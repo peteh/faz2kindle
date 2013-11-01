@@ -9,7 +9,7 @@ Attention: It requires a valid e-paper abonement of FAZ.net
 '''
 import faz2kindle
 
-KINDLE_MAIL= "youramazonperonalkindlemail@kindle.com"
+KINDLE_MAIL= "youramazonpersonalkindlemail@kindle.com"
 
 # FAZ login data
 FAZ_USER = "youruser"
