@@ -1,7 +1,7 @@
 '''
 Created on Nov 1, 2013
 
-@author: nemesis
+@author: pete
 '''
 import requests
 import datetime
