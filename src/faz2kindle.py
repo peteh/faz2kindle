@@ -66,6 +66,22 @@ class FazLoader(object):
         req = self.s.post("https://www.faz.net/membership/loginNoScript", data)
         req = self.s.get("http://www.faz.net/e-paper/")
         
+    def _deletePrevious(self, filename):
+        f_time = filename[-8:-4]
+        f_date = filename[0:8]
+        found_older = False
+        pdf_files = [f for f in os.listdir(self.storePath) if f.endswith('.pdf')]
+        for pdf_file in pdf_files:
+            pdff_time = pdf_file[-8:-4]
+            pdff_date = pdf_file[0:8]
+            
+            # same version but one file is older: 
+            if(pdff_date == f_date and int(pdff_time) < int(f_time)):
+                # delete older file
+                found_older = True
+                os.remove(self.storePath+pdf_file)
+                print "removed older version of " + filename + ": "+pdf_file
+        return found_older
 
     def download(self, year, month, day, rmz = False):
         url = self.getDownloadLink( year, month, day, rmz)
@@ -76,22 +92,27 @@ class FazLoader(object):
             return False
         
         # get file name from url
-        filename = self.storePath + url.split('/', )[-1]
-        if os.path.isfile(filename):
+        filename =  url.split('/', )[-1]
+        if os.path.isfile(self.storePath + filename):
             print "File " + filename +" already exists"
             return False
         
         print "Downloading to " + filename
         req = self.s.get(url,stream=True)
-        f = open(filename, "wb")
+        f = open(self.storePath + filename, "wb")
         for chunk in req.iter_content(chunk_size=20*1024): 
             if chunk: # filter out keep-alive new chunks
                 f.write(chunk)
                 f.flush()
         f.close()
-        
-        if(self.download2Kindle):
-            print "Sending " + filename + " to " + self.amazonmail
+		
+        # remove previous versions
+        found_prev = self._deletePrevious(filename)
+		
+		# if download to kindle and no previous version of the file has been already sent
+        # avoids sending multiple versions of the file to the kindle
+        if(self.download2Kindle and not found_prev):
+            print "Sending " + filename + " to " + str(self.amazonmail)
             self.mail(self.amazonmail, filename)
         return True
     
@@ -142,7 +163,7 @@ class FazLoader(object):
         msg = MIMEMultipart()
         
         msg['From'] = self.gmailLogin[0]
-        msg['To'] = to
+        msg['To'] = to.join(';')
         msg['Subject'] = "UPDATED FAZ"
         
         fname = os.path.basename(attach_file)

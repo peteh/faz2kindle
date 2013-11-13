@@ -8,8 +8,8 @@ Attention: It requires a valid e-paper abonement of FAZ.net
 @author: pete
 '''
 import faz2kindle
-
-KINDLE_MAIL= "youramazonperonalkindlemail@kindle.com"
+# emails of kindle accounts in a list
+KINDLE_MAIL= ["youramazonperonalkindlemail@kindle.com"]
 
 # FAZ login data
 FAZ_USER = "youruser"
