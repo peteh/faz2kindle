@@ -76,7 +76,10 @@ class FazLoader(object):
             pdff_date = pdf_file[0:8]
             
             # same version but one file is older: 
-            if(pdff_date == f_date and int(pdff_time) < int(f_time)):
+            if(pdff_date == f_date and \
+                ((900 <= int(pdff_time) <= 2400 and 900 <= int(f_time) <= 2400 and int(pdff_time) < int(f_time)) or \
+                (0 <= int(pdff_time) <= 900 and 0 <= int(f_time) <= 900 and int(pdff_time) < int(f_time)) or \
+                (900 <= int(pdff_time) <= 2400 and 0 <= int(f_time) <= 900 and int(pdff_time) > int(f_time)))):
                 # delete older file
                 found_older = True
                 os.remove(self.storePath+pdf_file)
@@ -163,7 +166,7 @@ class FazLoader(object):
         msg = MIMEMultipart()
         
         msg['From'] = self.gmailLogin[0]
-        msg['To'] = to.join(';')
+        msg['To'] = ', '.join(to)
         msg['Subject'] = "UPDATED FAZ"
         
         fname = os.path.basename(attach_file)
@@ -172,7 +175,7 @@ class FazLoader(object):
         
         # read and encode file for email use
         part = MIMEBase('application', 'octet-stream')
-        f = open(attach_file, 'rb')
+        f = open(self.storePath + attach_file, 'rb')
         data = f.read()
         f.close()
         part.set_payload(data)
