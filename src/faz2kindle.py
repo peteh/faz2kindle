@@ -76,10 +76,7 @@ class FazLoader(object):
             pdff_date = pdf_file[0:8]
             
             # same version but one file is older: 
-            if(pdff_date == f_date and \
-                ((900 <= int(pdff_time) <= 2400 and 900 <= int(f_time) <= 2400 and int(pdff_time) < int(f_time)) or \
-                (0 <= int(pdff_time) <= 900 and 0 <= int(f_time) <= 900 and int(pdff_time) < int(f_time)) or \
-                (900 <= int(pdff_time) <= 2400 and 0 <= int(f_time) <= 900 and int(pdff_time) > int(f_time)))):
+            if(pdff_date == f_date and filename != pdf_file):
                 # delete older file
                 found_older = True
                 os.remove(self.storePath+pdf_file)
@@ -108,13 +105,13 @@ class FazLoader(object):
                 f.write(chunk)
                 f.flush()
         f.close()
-		
+
         # remove previous versions
         found_prev = self._deletePrevious(filename)
-		
-		# if download to kindle and no previous version of the file has been already sent
+
+        # if download to kindle and no previous version of the file has been already sent
         # avoids sending multiple versions of the file to the kindle
-        if(self.download2Kindle and not found_prev):
+        if(self.download2Kindle and not found_prev and len(self.amazonmail) > 0):
             print "Sending " + filename + " to " + str(self.amazonmail)
             self.mail(self.amazonmail, filename)
         return True
@@ -163,6 +160,9 @@ class FazLoader(object):
                     self.download(year, month, day, True)
                     
     def mail(self, to, attach_file):
+        # if mail addresses are empty, don't send
+        if(len(to) == 0):
+            return 
         msg = MIMEMultipart()
         
         msg['From'] = self.gmailLogin[0]
